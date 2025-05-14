@@ -48,8 +48,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--gt_video_folder', type=str, required=True)
     parser.add_argument('--pd_video_folder', type=str, required=True)
-    parser.add_argument('--task', type=str, required=True, choices=['speaker', 'listener'])
-    parser.add_argument('--anno_file', type=str, required=True)
     args = parser.parse_args()
 
     ssim_values = []

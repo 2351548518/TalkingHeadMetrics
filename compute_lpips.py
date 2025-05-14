@@ -1,5 +1,6 @@
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "4"  # 使用 GPU 这一行需要在import torch前面进行导入，这样才是指定卡
+import argparse
 import cv2
 import sys
 import lpips
@@ -43,35 +44,39 @@ class LPIPSMeter:
     def report(self):
         return f'LPIPS ({self.net}) = {self.measure():.6f}'
 
-# class 
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--gt_video_path', default="", type=str, required=True)
+    parser.add_argument('--pd_video_path', default="",type=str, required=True)
+    args = parser.parse_args()
 
-lpips_meter = LPIPSMeter()
+    lpips_meter = LPIPSMeter()
 
-lpips_meter.clear()
+    lpips_meter.clear()
 
-vid_path_1 = sys.argv[1]
-vid_path_2 = sys.argv[2]
+    vid_path_1 = args.pd_video_path
+    vid_path_2 = args.gt_video_path
 
-capture_1 = cv2.VideoCapture(vid_path_1)
-capture_2 = cv2.VideoCapture(vid_path_2)
+    capture_1 = cv2.VideoCapture(vid_path_1)
+    capture_2 = cv2.VideoCapture(vid_path_2)
 
-counter = 0
-while True:
-    ret_1, frame_1 = capture_1.read()
-    ret_2, frame_2 = capture_2.read()
+    counter = 0
+    while True:
+        ret_1, frame_1 = capture_1.read()
+        ret_2, frame_2 = capture_2.read()
 
-    if not ret_1 * ret_2:
-        break
-    
-    # plt.imshow(frame_1[:, :, ::-1])
-    # plt.show()
-    inp_1 = torch.FloatTensor(frame_1[..., ::-1] / 255.0)[None, ...].cuda()
-    inp_2 = torch.FloatTensor(frame_2[..., ::-1] / 255.0)[None, ...].cuda()
-    lpips_meter.update(inp_1, inp_2)
+        if not ret_1 * ret_2:
+            break
+        
+        # plt.imshow(frame_1[:, :, ::-1])
+        # plt.show()
+        inp_1 = torch.FloatTensor(frame_1[..., ::-1] / 255.0)[None, ...].cuda()
+        inp_2 = torch.FloatTensor(frame_2[..., ::-1] / 255.0)[None, ...].cuda()
+        lpips_meter.update(inp_1, inp_2)
 
-    counter+=1
-    if counter % 100 == 0:
-        print(counter)
+        counter+=1
+        if counter % 100 == 0:
+            print(counter)
 
-print(lpips_meter.report())
+    print(lpips_meter.report())
 

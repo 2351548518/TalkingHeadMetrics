@@ -1,9 +1,9 @@
 import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "6"  # 使用 GPU 这一行需要在import torch前面进行导入，这样才是指定卡
 import pandas as pd
 from glob import glob
 import argparse
 import cv2
-import os.path as osp
 import numpy as np
 import torch
 from tqdm import tqdm
@@ -37,9 +37,9 @@ if __name__ == '__main__':
     cpbd_values = []
     video_name_list = os.listdir(args.pd_video_folder)
     for video_idx, video_name in tqdm(video_name_list):
-        pd_video_path = os.path.join(args.args.pd_video_folder,video_name)
+        pd_video_path = os.path.join(args.pd_video_folder,video_name)
 
-        assert osp.exists(pd_video_path), f"'{pd_video_path}' is not exist"
+        assert os.path.exists(pd_video_path), f"'{pd_video_path}' is not exist"
 
         pd_frames = read_mp4(pd_video_path, False, True, False)
         cpbd_value = [cpbd.compute(frame) for frame in tqdm(pd_frames, leave=False)]

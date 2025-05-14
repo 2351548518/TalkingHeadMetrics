@@ -1,6 +1,6 @@
 import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "6"  # 使用 GPU 这一行需要在import torch前面进行导入，这样才是指定卡
 import argparse
-import os.path as osp
 import pandas as pd
 from glob import glob
 from tqdm import tqdm
@@ -8,7 +8,6 @@ import cv2
 import numpy as np
 import torch
 import torch.nn.functional as F
-
 from arcface_torch.backbones import get_model
 
 
@@ -49,15 +48,15 @@ if __name__ == "__main__":
     gt_feats = []
     pd_feats = []
     video_name_list = os.listdir(args.pd_video_folder)
-    for row_idx, row in tqdm(df.iterrows(), total=len(df)):
-        gt_video_fn = f'{args.gt_video_folder}/{row.uuid}.{args.task}.mp4'
-        pd_video_fn = f'{args.pd_video_folder}/{row.uuid}.{args.task}.mp4'
+    for video_idx, video_name in tqdm(video_name_list):
+        gt_video_path = os.path.join(args.gt_video_folder,video_name)
+        pd_video_path = os.path.join(args.pd_video_folder,video_name)
 
-        assert osp.exists(gt_video_fn), f"'{gt_video_fn}' is not exist"
-        assert osp.exists(pd_video_fn), f"'{pd_video_fn}' is not exist"
+        assert os.path.exists(gt_video_path), f"'{gt_video_path}' is not exist"
+        assert os.path.exists(pd_video_path), f"'{pd_video_path}' is not exist"
 
-        gt_frames = read_mp4(gt_video_fn, (112, 112), True, False, True)
-        pd_frames = read_mp4(pd_video_fn, (112, 112), True, False, True)
+        gt_frames = read_mp4(gt_video_path, (112, 112), True, False, True)
+        pd_frames = read_mp4(pd_video_path, (112, 112), True, False, True)
 
         gt_frames = torch.from_numpy(gt_frames).float()
         pd_frames = torch.from_numpy(pd_frames).float()

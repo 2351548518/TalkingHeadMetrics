@@ -1,8 +1,9 @@
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "6"  # 使用 GPU 这一行需要在import torch前面进行导入，这样才是指定卡
 import pandas as pd
 from glob import glob
 import argparse
 import cv2
-import os.path as osp
 import numpy as np
 import torch
 from tqdm import tqdm
@@ -32,24 +33,22 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--gt_video_folder', type=str, required=True)
     parser.add_argument('--pd_video_folder', type=str, required=True)
-    parser.add_argument('--task', type=str, required=True, choices=['speaker', 'listener'])
-    parser.add_argument('--anno_file', type=str, required=True)
     parser.add_argument('--batch_size', type=int, default=512)
     args = parser.parse_args()
 
     fid_metric = FID()
     gt_feats = []
     pd_feats = []
-    df = pd.read_csv(args.anno_file)
-    for row_idx, row in tqdm(df.iterrows(), total=len(df)):
-        gt_video_fn = f'{args.gt_video_folder}/{row.uuid}.{args.task}.mp4'
-        pd_video_fn = f'{args.pd_video_folder}/{row.uuid}.{args.task}.mp4'
+    video_name_list = os.listdir(args.pd_video_folder)
+    for video_idx, video_name in tqdm(video_name_list):
+        gt_video_path = os.path.join(args.gt_video_folder,video_name)
+        pd_video_path = os.path.join(args.pd_video_folder,video_name)
 
-        assert osp.exists(gt_video_fn), f"'{gt_video_fn}' is not exist"
-        assert osp.exists(pd_video_fn), f"'{pd_video_fn}' is not exist"
+        assert os.path.exists(gt_video_path), f"'{gt_video_path}' is not exist"
+        assert os.path.exists(pd_video_path), f"'{pd_video_path}' is not exist"
 
-        gt_frames = read_mp4(gt_video_fn, True, False, True)
-        pd_frames = read_mp4(pd_video_fn, True, False, True)
+        gt_frames = read_mp4(gt_video_path, True, False, True)
+        pd_frames = read_mp4(pd_video_path, True, False, True)
 
         gt_frames = torch.from_numpy(gt_frames).float() / 255.
         pd_frames = torch.from_numpy(pd_frames).float() / 255.
