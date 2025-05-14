@@ -6,7 +6,7 @@ import os.path as osp
 import numpy as np
 import torch
 from tqdm import tqdm
-from piq import psnr, ssim
+from piq import ssim
 
 
 def read_mp4(input_fn, to_rgb=False, to_gray=False, to_nchw=False):
