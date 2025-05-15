@@ -2,10 +2,9 @@ import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "4"  # 使用 GPU 这一行需要在import torch前面进行导入，这样才是指定卡
 import argparse
 import cv2
-import sys
 import lpips
+from tqdm import tqdm
 import numpy as np
-from matplotlib import pyplot as plt
 import torch
 
 class LPIPSMeter:
@@ -42,41 +41,51 @@ class LPIPSMeter:
         writer.add_scalar(os.path.join(prefix, f"LPIPS ({self.net})"), self.measure(), global_step)
 
     def report(self):
-        return f'LPIPS ({self.net}) = {self.measure():.6f}'
+        return self.measure()
+
+def compute_lpips(gt_video_folder, pd_video_folder):
+
+    lpips_meter = LPIPSMeter()
+    lpips_meter.clear()
+
+    video_name_list = os.listdir(pd_video_folder)
+
+    for video_name in tqdm(video_name_list):
+        gt_video_path = os.path.join(gt_video_folder,video_name)
+        pd_video_path = os.path.join(pd_video_folder,video_name)
+
+        assert os.path.exists(gt_video_path), f"'{gt_video_path}' is not exist"
+        assert os.path.exists(pd_video_path), f"'{pd_video_path}' is not exist"
+
+        capture_1 = cv2.VideoCapture(pd_video_path)
+        capture_2 = cv2.VideoCapture(gt_video_path)
+
+        while True:
+            ret_1, frame_1 = capture_1.read()
+            ret_2, frame_2 = capture_2.read()
+
+            if not ret_1 * ret_2:
+                break
+            
+            # plt.imshow(frame_1[:, :, ::-1])
+            # plt.show()
+            inp_1 = torch.FloatTensor(frame_1[..., ::-1] / 255.0)[None, ...].cuda()
+            inp_2 = torch.FloatTensor(frame_2[..., ::-1] / 255.0)[None, ...].cuda()
+            lpips_meter.update(inp_1, inp_2)
+
+    lpips_result = lpips_meter.report()
+    print('LPIPS:',lpips_result)
+    return lpips_result
+
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--gt_video_path', default="", type=str, required=True)
-    parser.add_argument('--pd_video_path', default="",type=str, required=True)
+    parser.add_argument('--gt_video_folder', default="", type=str, required=True)
+    parser.add_argument('--pd_video_folder', default="",type=str, required=True)
     args = parser.parse_args()
 
-    lpips_meter = LPIPSMeter()
+    compute_lpips(args.gt_video_folder, args.pd_video_folder)
 
-    lpips_meter.clear()
 
-    vid_path_1 = args.pd_video_path
-    vid_path_2 = args.gt_video_path
-
-    capture_1 = cv2.VideoCapture(vid_path_1)
-    capture_2 = cv2.VideoCapture(vid_path_2)
-
-    counter = 0
-    while True:
-        ret_1, frame_1 = capture_1.read()
-        ret_2, frame_2 = capture_2.read()
-
-        if not ret_1 * ret_2:
-            break
-        
-        # plt.imshow(frame_1[:, :, ::-1])
-        # plt.show()
-        inp_1 = torch.FloatTensor(frame_1[..., ::-1] / 255.0)[None, ...].cuda()
-        inp_2 = torch.FloatTensor(frame_2[..., ::-1] / 255.0)[None, ...].cuda()
-        lpips_meter.update(inp_1, inp_2)
-
-        counter+=1
-        if counter % 100 == 0:
-            print(counter)
-
-    print(lpips_meter.report())
 
