@@ -7,55 +7,30 @@ import numpy as np
 import torch
 from tqdm import tqdm
 from piq import FID
+from utils.video_utils import read_mp4
 
-
-def read_mp4(input_fn, to_rgb=False, to_gray=False, to_nchw=False):
-    frames = []
-    cap = cv2.VideoCapture(input_fn)
-    while True:
-        ret, frame = cap.read()
-        if not ret:
-            break
-        if to_rgb:
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        if to_gray:
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        frames.append(frame)
-    cap.release()
-    frames = np.stack(frames)
-    if to_nchw:
-        frames = np.transpose(frames, (0, 3, 1, 2))
-    return frames
-
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--gt_video_folder', type=str, required=True)
-    parser.add_argument('--pd_video_folder', type=str, required=True)
-    parser.add_argument('--batch_size', type=int, default=512)
-    args = parser.parse_args()
-
+def compute_fid(gt_video_folder, pd_video_folder,batch_size):
     fid_metric = FID()
     gt_feats = []
     pd_feats = []
-    video_name_list = os.listdir(args.pd_video_folder)
-    for video_idx, video_name in tqdm(video_name_list):
-        gt_video_path = os.path.join(args.gt_video_folder,video_name)
-        pd_video_path = os.path.join(args.pd_video_folder,video_name)
+    video_name_list = os.listdir(pd_video_folder)
+    for video_name in tqdm(video_name_list):
+        gt_video_path = os.path.join(gt_video_folder,video_name)
+        pd_video_path = os.path.join(pd_video_folder,video_name)
 
         assert os.path.exists(gt_video_path), f"'{gt_video_path}' is not exist"
         assert os.path.exists(pd_video_path), f"'{pd_video_path}' is not exist"
 
-        gt_frames = read_mp4(gt_video_path, True, False, True)
-        pd_frames = read_mp4(pd_video_path, True, False, True)
+        gt_frames = read_mp4(gt_video_path,target_size=None, to_rgb=True, to_gray=False, to_nchw=True)
+        pd_frames = read_mp4(pd_video_path,target_size=None, to_rgb=True, to_gray=False, to_nchw=True)
 
         gt_frames = torch.from_numpy(gt_frames).float() / 255.
         pd_frames = torch.from_numpy(pd_frames).float() / 255.
 
         T = gt_frames.size(0)
         total_images = torch.cat((gt_frames, pd_frames), 0)
-        if len(total_images) > args.batch_size:
-            total_images = torch.split(total_images, args.batch_size, 0)
+        if len(total_images) > batch_size:
+            total_images = torch.split(total_images, batch_size, 0)
         else:
             total_images = [total_images]
 
@@ -74,4 +49,15 @@ if __name__ == '__main__':
 
     gt_feats = torch.from_numpy(np.concatenate(gt_feats, 0))
     pd_feats = torch.from_numpy(np.concatenate(pd_feats, 0))
-    print('fid:', fid_metric.compute_metric(pd_feats, gt_feats).item())
+    fid_result = fid_metric.compute_metric(pd_feats, gt_feats).item()
+    print('fid:', fid_result)
+    return fid_result
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--gt_video_folder', type=str, required=True)
+    parser.add_argument('--pd_video_folder', type=str, required=True)
+    parser.add_argument('--batch_size', type=int, default=512)
+    args = parser.parse_args()
+    compute_fid(args.gt_video_folder, args.pd_video_folder, args.batch_size)
+

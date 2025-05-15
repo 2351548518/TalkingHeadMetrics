@@ -3,7 +3,6 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "6"  # 使用 GPU 这一行需要在import 
 import argparse
 from glob import glob
 from tqdm import tqdm
-import cv2
 import numpy as np
 import torch
 import torch.nn.functional as F

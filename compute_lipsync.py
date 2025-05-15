@@ -339,22 +339,22 @@ if __name__ == '__main__':
     # # PARSE ARGS
     # ========== ========== ========== ==========
 
-    parser = argparse.ArgumentParser(description = "FaceTracker");
-    parser.add_argument('--data_dir',           type=str, default='./output', help='Output direcotry');
-    parser.add_argument('--pd_video_folder',    type=str, default='',       help='');
-    parser.add_argument('--gt_audio_folder',    type=str, default='',       help='');
-    parser.add_argument('--anno_file',          type=str, default='',       help='');
-    parser.add_argument('--reference',          type=str, default='',       help='Video reference');
-    parser.add_argument('--facedet_scale',      type=float, default=0.25, help='Scale factor for face detection');
-    parser.add_argument('--crop_scale',         type=float, default=0.40, help='Scale bounding box');
-    parser.add_argument('--min_track',          type=int, default=100,  help='Minimum facetrack duration');
-    parser.add_argument('--frame_rate',         type=int, default=25,       help='Frame rate');
-    parser.add_argument('--num_failed_det', type=int, default=25,       help='Number of missed detections allowed before tracking is stopped');
-    parser.add_argument('--min_face_size',  type=int, default=100,  help='Minimum face size in pixels');
-    parser.add_argument('--initial_model', type=str, default="data/syncnet_v2.model", help='');
-    parser.add_argument('--batch_size', type=int, default='20', help='');
-    parser.add_argument('--vshift', type=int, default='15', help='');
-    opt = parser.parse_args();
+    parser = argparse.ArgumentParser(description = "FaceTracker")
+    parser.add_argument('--data_dir',           type=str, default='./output', help='Output direcotry')
+    parser.add_argument('--pd_video_folder',    type=str, default='',       help='')
+    parser.add_argument('--gt_audio_folder',    type=str, default='',       help='')
+    parser.add_argument('--anno_file',          type=str, default='',       help='')
+    parser.add_argument('--reference',          type=str, default='',       help='Video reference')
+    parser.add_argument('--facedet_scale',      type=float, default=0.25, help='Scale factor for face detection')
+    parser.add_argument('--crop_scale',         type=float, default=0.40, help='Scale bounding box')
+    parser.add_argument('--min_track',          type=int, default=100,  help='Minimum facetrack duration')
+    parser.add_argument('--frame_rate',         type=int, default=25,       help='Frame rate')
+    parser.add_argument('--num_failed_det', type=int, default=25,       help='Number of missed detections allowed before tracking is stopped')
+    parser.add_argument('--min_face_size',  type=int, default=100,  help='Minimum face size in pixels')
+    parser.add_argument('--initial_model', type=str, default="data/syncnet_v2.model", help='')
+    parser.add_argument('--batch_size', type=int, default='20', help='')
+    parser.add_argument('--vshift', type=int, default='15', help='')
+    opt = parser.parse_args()
 
     setattr(opt,'avi_dir',os.path.join(opt.data_dir,'pyavi'))
     setattr(opt,'tmp_dir',os.path.join(opt.data_dir,'pytmp'))
@@ -363,10 +363,10 @@ if __name__ == '__main__':
     setattr(opt,'crop_dir',os.path.join(opt.data_dir,'pycrop'))
     setattr(opt,'frames_dir',os.path.join(opt.data_dir,'pyframes'))
 
-    s = SyncNetInstance();
+    s = SyncNetInstance()
 
-    s.loadParameters(opt.initial_model);
-    print("Model %s loaded."%opt.initial_model);
+    s.loadParameters(opt.initial_model)
+    print("Model %s loaded."%opt.initial_model)
 
     DET = S3FD(device='cuda')
 
