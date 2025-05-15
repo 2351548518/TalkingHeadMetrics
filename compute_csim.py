@@ -1,7 +1,6 @@
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "6"  # 使用 GPU 这一行需要在import torch前面进行导入，这样才是指定卡
 import argparse
-import pandas as pd
 from glob import glob
 from tqdm import tqdm
 import cv2
@@ -9,48 +8,22 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 from arcface_torch.backbones import get_model
+from utils.video_utils import read_mp4
 
 
-def read_mp4(input_fn, target_size=None, to_rgb=False, to_gray=False, to_nchw=False):
-    frames = []
-    cap = cv2.VideoCapture(input_fn)
-    while True:
-        ret, frame = cap.read()
-        if not ret:
-            break
-        if to_rgb:
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        if to_gray:
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        if target_size is not None:
-            frame = cv2.resize(frame, target_size)
-        frames.append(frame)
-    cap.release()
-    frames = np.stack(frames)
-    if to_nchw:
-        frames = np.transpose(frames, (0, 3, 1, 2))
-    return frames
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--gt_video_folder', default="", type=str, required=True)
-    parser.add_argument('--pd_video_folder', default="",type=str, required=True)
-    parser.add_argument('--batch_size', type=int, default=512)
-    parser.add_argument('--weight', type=str, required=True)
-    args = parser.parse_args()
-
+def compute_csim(gt_video_folder,pd_video_folder,batch_size, weight):
+    
     net = get_model('r100', fp16=False)
-    net.load_state_dict(torch.load(args.weight))
+    net.load_state_dict(torch.load(weight))
     net = net.cuda()
     net.eval()
 
     gt_feats = []
     pd_feats = []
-    video_name_list = os.listdir(args.pd_video_folder)
-    for video_idx, video_name in tqdm(video_name_list):
-        gt_video_path = os.path.join(args.gt_video_folder,video_name)
-        pd_video_path = os.path.join(args.pd_video_folder,video_name)
+    video_name_list = os.listdir(pd_video_folder)
+    for video_name in tqdm(video_name_list):
+        gt_video_path = os.path.join(gt_video_folder,video_name)
+        pd_video_path = os.path.join(pd_video_folder,video_name)
 
         assert os.path.exists(gt_video_path), f"'{gt_video_path}' is not exist"
         assert os.path.exists(pd_video_path), f"'{pd_video_path}' is not exist"
@@ -66,8 +39,8 @@ if __name__ == "__main__":
 
         T = gt_frames.size(0)
         total_images = torch.cat((gt_frames, pd_frames), 0).cuda()
-        if len(total_images) > args.batch_size:
-            total_images = torch.split(total_images, args.batch_size, 0)
+        if len(total_images) > batch_size:
+            total_images = torch.split(total_images, batch_size, 0)
         else:
             total_images = [total_images]
 
@@ -84,4 +57,17 @@ if __name__ == "__main__":
         pd_feats.append(pd_feat.numpy())
     gt_feats = torch.from_numpy(np.concatenate(gt_feats, 0))
     pd_feats = torch.from_numpy(np.concatenate(pd_feats, 0))
-    print('cosine similarity:', F.cosine_similarity(gt_feats, pd_feats).mean().item())
+    cosine_similarity = F.cosine_similarity(gt_feats, pd_feats).mean().item()
+    print('cosine similarity:', cosine_similarity)
+    return cosine_similarity
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--gt_video_folder', default="", type=str, required=True)
+    parser.add_argument('--pd_video_folder', default="",type=str, required=True)
+    parser.add_argument('--batch_size',default=512, type=int )
+    parser.add_argument('--weight', default="",type=str, required=True)
+    args = parser.parse_args()
+
+    compute_csim(args.gt_video_folder, args.pd_video_folder, args.batch_size, args.weight)

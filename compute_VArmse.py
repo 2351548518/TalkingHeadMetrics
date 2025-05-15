@@ -25,7 +25,7 @@ def compute_VAmetrics(gt_video_folder, pd_video_folder,checkpoint_path):
     print(f'Loading the model from {checkpoint_path}.')
     state_dict = torch.load(str(checkpoint_path), map_location='cpu')
     state_dict = {k.replace('module.',''):v for k,v in state_dict.items()}
-    net = EmoNet(n_expression=args.nclasses).to(device)
+    net = EmoNet(n_expression=8).to(device)
     net.load_state_dict(state_dict, strict=False)
     net.eval()
 

@@ -1,40 +1,54 @@
 '''
+Adapted from https://github.com/Fictionarry/TalkingGaussian/blob/main/auerror.py
+
 The AUE evaluation is based on OpenFace (https://github.com/TadasBaltrusaitis/OpenFace). 
 First, use OpenFace's FeatureExtraction to process the reconstructed video ("A_generated.mp4" for example) 
 and the corresponding GT ("A_GT.mp4" for example) respectively.
-Then, run "python auerror.py A_generated A_GT"
-
-Default directory structure is:
-
-|--- auerror.py
-|--- OpenFace_2.2.0_win_x64
-     |--- proceessed
-     |--- ...
-
 '''
 
-
+import argparse
 import pandas as pd
 import os
 import sys
 import numpy as np
-
-AUitems = ['AU01_r','AU02_r', 'AU04_r', 'AU05_r', 'AU06_r', 'AU07_r', 'AU09_r', 'AU10_r', 'AU12_r', 'AU14_r', 'AU15_r', 'AU17_r', 'AU20_r', 'AU23_r', 'AU25_r', 'AU26_r', 'AU45_r']
-
-df_1 = pd.read_csv(os.path.join('./OpenFace_2.2.0_win_x64/processed', sys.argv[1]+'.csv'))[AUitems]
-df_2 = pd.read_csv(os.path.join('./OpenFace_2.2.0_win_x64/processed', sys.argv[2]+'.csv'))[AUitems]
-
-error = (df_1-df_2)**2
-print(error.mean().sum())
+from tqdm import tqdm
 
 
-AUitems_lower = ['AU10_r', 'AU12_r', 'AU14_r', 'AU15_r', 'AU17_r', 'AU20_r', 'AU23_r', 'AU25_r', 'AU26_r']
-AUitems_upper = ['AU01_r','AU02_r', 'AU04_r', 'AU05_r', 'AU06_r', 'AU07_r', 'AU09_r', 'AU45_r']
+def compute_aue(gt_au_folder, pd_au_folder):
+     AUitems = ['AU01_r','AU02_r', 'AU04_r', 'AU05_r', 'AU06_r', 'AU07_r', 'AU09_r', 'AU10_r', 'AU12_r', 'AU14_r', 'AU15_r', 'AU17_r', 'AU20_r', 'AU23_r', 'AU25_r', 'AU26_r', 'AU45_r']
+     AUitems_lower = ['AU10_r', 'AU12_r', 'AU14_r', 'AU15_r', 'AU17_r', 'AU20_r', 'AU23_r', 'AU25_r', 'AU26_r']
+     AUitems_upper = ['AU01_r','AU02_r', 'AU04_r', 'AU05_r', 'AU06_r', 'AU07_r', 'AU09_r', 'AU45_r']
 
-df_1 = pd.read_csv(os.path.join('./OpenFace_2.2.0_win_x64/processed', sys.argv[1]+'.csv'))[AUitems]
-df_2 = pd.read_csv(os.path.join('./OpenFace_2.2.0_win_x64/processed', sys.argv[2]+'.csv'))[AUitems]
+     csv_name_list = os.listdir(gt_au_folder)
 
-error_l = (df_1[AUitems_lower]-df_2[AUitems_lower])**2
-error_u = (df_1[AUitems_upper]-df_2[AUitems_upper])**2
+     gt_au_values = pd.DataFrame(columns=AUitems)
+     pd_au_values = pd.DataFrame(columns=AUitems)
 
-print('AUE-L:', error_l.mean().sum(), 'AUE-U', error_u.mean().sum())
+     for csv_name in tqdm(csv_name_list):
+         gt_au_path = os.path.join(gt_au_folder, csv_name)
+         pd_au_path = os.path.join(pd_au_folder, csv_name)
+
+         assert os.path.exists(gt_au_path), f"'{gt_au_path}' is not exist"
+         assert os.path.exists(pd_au_path), f"'{pd_au_path}' is not exist"
+
+         gt_df = pd.read_csv(gt_au_path)[AUitems]
+         pd_df = pd.read_csv(pd_au_path)[AUitems]
+         gt_au_values = pd.concat([gt_au_values, gt_df], axis=0)
+         pd_au_values = pd.concat([pd_au_values, pd_df], axis=0)
+
+     error_l = (gt_au_values[AUitems_lower] - pd_au_values[AUitems_lower]) ** 2
+     error_u = (gt_au_values[AUitems_upper] - pd_au_values[AUitems_upper]) ** 2
+     aue_l = error_l.mean().sum()
+     aue_u = error_u.mean().sum()
+     print('AUE-L:', aue_l, 'AUE-U', aue_u)
+     return aue_l, aue_u
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--gt_au_folder',default="", type=str, required=True)
+    parser.add_argument('--pd_au_folder',default="", type=str, required=True)
+    args = parser.parse_args()
+
+    compute_aue(args.gt_au_folder, args.pd_au_folder)
+    
