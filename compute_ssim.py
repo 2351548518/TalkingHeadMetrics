@@ -9,25 +9,7 @@ import numpy as np
 import torch
 from tqdm import tqdm
 from piq import ssim
-
-
-def read_mp4(input_fn, to_rgb=False, to_gray=False, to_nchw=False):
-    frames = []
-    cap = cv2.VideoCapture(input_fn)
-    while True:
-        ret, frame = cap.read()
-        if not ret:
-            break
-        if to_rgb:
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        if to_gray:
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        frames.append(frame)
-    cap.release()
-    frames = np.stack(frames)
-    if to_nchw:
-        frames = np.transpose(frames, (0, 3, 1, 2))
-    return frames
+from utils.video_utils import read_mp4
 
 
 if __name__ == '__main__':
@@ -45,8 +27,8 @@ if __name__ == '__main__':
         assert osp.exists(gt_video_path), f"'{gt_video_path}' is not exist"
         assert osp.exists(pd_video_path), f"'{pd_video_path}' is not exist"
 
-        gt_frames = read_mp4(gt_video_path, True, False, True)
-        pd_frames = read_mp4(pd_video_path, True, False, True)
+        gt_frames = read_mp4(gt_video_path, target_size=None,to_rgb=True, to_gray=False, to_nchw=True)
+        pd_frames = read_mp4(pd_video_path, target_size=None,to_rgb=True, to_gray=False, to_nchw=True)
 
         gt_frames = torch.from_numpy(gt_frames).float() / 255.
         pd_frames = torch.from_numpy(pd_frames).float() / 255.
