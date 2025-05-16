@@ -1,6 +1,5 @@
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "6"  # 使用 GPU 这一行需要在import torch前面进行导入，这样才是指定卡
-from glob import glob
 from utils.video_utils import read_mp4
 import argparse
 import numpy as np

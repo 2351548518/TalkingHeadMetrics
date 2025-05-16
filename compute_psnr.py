@@ -1,9 +1,6 @@
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "6"  # 使用 GPU 这一行需要在import torch前面进行导入，这样才是指定卡
-import pandas as pd
-from glob import glob
 import argparse
-import cv2
 import numpy as np
 import torch
 from tqdm import tqdm

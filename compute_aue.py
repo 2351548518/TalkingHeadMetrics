@@ -9,8 +9,6 @@ and the corresponding GT ("A_GT.mp4" for example) respectively.
 import argparse
 import pandas as pd
 import os
-import sys
-import numpy as np
 from tqdm import tqdm
 
 
