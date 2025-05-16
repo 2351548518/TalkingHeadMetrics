@@ -1,0 +1,8 @@
+*.so
+*.mp4
+*.pth
+*.pt2
+*.pyc
+.vscode
+output/*
+data/*

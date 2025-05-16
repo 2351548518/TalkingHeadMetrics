@@ -38,7 +38,6 @@ def compute_aue(gt_au_folder, pd_au_folder):
      error_u = (gt_au_values[AUitems_upper] - pd_au_values[AUitems_upper]) ** 2
      aue_l = error_l.mean().sum()
      aue_u = error_u.mean().sum()
-     print('AUE-L:', aue_l, 'AUE-U', aue_u)
      return aue_l, aue_u
 
 
