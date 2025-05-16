@@ -1,5 +1,5 @@
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "4"  # 使用 GPU 这一行需要在import torch前面进行导入，这样才是指定卡
+# os.environ["CUDA_VISIBLE_DEVICES"] = "4"  # 使用 GPU 这一行需要在import torch前面进行导入，这样才是指定卡
 import argparse
 import cv2
 import lpips
@@ -74,7 +74,6 @@ def compute_lpips(gt_video_folder, pd_video_folder):
             lpips_meter.update(inp_1, inp_2)
 
     lpips_result = lpips_meter.report()
-    print('LPIPS:',lpips_result)
     return lpips_result
 
 

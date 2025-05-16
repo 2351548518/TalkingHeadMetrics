@@ -1,5 +1,5 @@
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "6"  # 使用 GPU 这一行需要在import torch前面进行导入，这样才是指定卡
+# os.environ["CUDA_VISIBLE_DEVICES"] = "6"  # 使用 GPU 这一行需要在import torch前面进行导入，这样才是指定卡
 import argparse
 import numpy as np
 import torch
@@ -48,7 +48,6 @@ def compute_fid(gt_video_folder, pd_video_folder,batch_size):
     gt_feats = torch.from_numpy(np.concatenate(gt_feats, 0))
     pd_feats = torch.from_numpy(np.concatenate(pd_feats, 0))
     fid_result = fid_metric.compute_metric(pd_feats, gt_feats).item()
-    print('fid:', fid_result)
     return fid_result
 
 if __name__ == '__main__':

@@ -1,5 +1,5 @@
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "6"  # 使用 GPU 这一行需要在import torch前面进行导入，这样才是指定卡
+# os.environ["CUDA_VISIBLE_DEVICES"] = "6"  # 使用 GPU 这一行需要在import torch前面进行导入，这样才是指定卡
 from glob import glob
 import argparse
 import cv2
@@ -83,10 +83,7 @@ def compute_VAmetrics(gt_video_folder, pd_video_folder,checkpoint_path):
 
     sagr_valence = SAGR(gt_valence_values, pd_valence_values)
     sagr_arousal = SAGR(gt_arousal_values, pd_arousal_values)
-    print('rmse_valence:', rmse_valence)
-    print('rmse_arousal:', rmse_arousal)
-    print('sagr_valence:', sagr_valence)
-    print('sagr_arousal:', sagr_arousal)
+
     return rmse_valence, rmse_arousal, sagr_valence, sagr_arousal
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

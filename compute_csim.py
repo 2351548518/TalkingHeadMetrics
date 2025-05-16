@@ -1,5 +1,5 @@
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "6"  # 使用 GPU 这一行需要在import torch前面进行导入，这样才是指定卡
+# os.environ["CUDA_VISIBLE_DEVICES"] = "6"  # 使用 GPU 这一行需要在import torch前面进行导入，这样才是指定卡
 import argparse
 from tqdm import tqdm
 import numpy as np
@@ -56,7 +56,6 @@ def compute_csim(gt_video_folder,pd_video_folder,batch_size, weight):
     gt_feats = torch.from_numpy(np.concatenate(gt_feats, 0))
     pd_feats = torch.from_numpy(np.concatenate(pd_feats, 0))
     cosine_similarity = F.cosine_similarity(gt_feats, pd_feats).mean().item()
-    print('cosine similarity:', cosine_similarity)
     return cosine_similarity
 
 

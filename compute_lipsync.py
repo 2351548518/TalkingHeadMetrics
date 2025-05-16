@@ -343,7 +343,6 @@ if __name__ == '__main__':
     parser.add_argument('--data_dir',           type=str, default='./output', help='Output direcotry')
     parser.add_argument('--pd_video_folder',    type=str, default='',       help='')
     parser.add_argument('--gt_audio_folder',    type=str, default='',       help='')
-    parser.add_argument('--anno_file',          type=str, default='',       help='')
     parser.add_argument('--reference',          type=str, default='',       help='Video reference')
     parser.add_argument('--facedet_scale',      type=float, default=0.25, help='Scale factor for face detection')
     parser.add_argument('--crop_scale',         type=float, default=0.40, help='Scale bounding box')
@@ -369,13 +368,12 @@ if __name__ == '__main__':
     print("Model %s loaded."%opt.initial_model)
 
     DET = S3FD(device='cuda')
-
-    df = pd.read_csv(opt.anno_file)
+    video_name_list = os.listdir(opt.pd_video_folder)
     offset_and_confs = []
     dists = []
-    for row_idx, row in tqdm(df.iterrows(), total=len(df)):
-        pd_video_fn = f'{opt.pd_video_folder}/{row.uuid}.speaker.mp4'
-        gt_audio_fn = f'{opt.gt_audio_folder}/{row.uuid}.wav'
+    for video_name in tqdm(video_name_list):
+        pd_video_fn = os.path.join(opt.pd_video_folder, video_name)
+        gt_audio_fn = os.path.join(opt.gt_audio_folder, video_name[:-4] + '.wav')
         assert os.path.exists(pd_video_fn), f"'{pd_video_fn}' is not exist"
         assert os.path.exists(gt_audio_fn), f"'{gt_audio_fn}' is not exist"
         new_video_fn = merge_video_audio(pd_video_fn, gt_audio_fn, opt)

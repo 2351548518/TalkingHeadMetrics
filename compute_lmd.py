@@ -1,5 +1,5 @@
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "6"  # 使用 GPU 这一行需要在import torch前面进行导入，这样才是指定卡
+# os.environ["CUDA_VISIBLE_DEVICES"] = "6"  # 使用 GPU 这一行需要在import torch前面进行导入，这样才是指定卡
 import argparse
 import numpy as np
 from tqdm import tqdm
@@ -33,7 +33,6 @@ def compute_lmd(gt_video_folder,pd_video_folder):
             distances = np.abs(pd_landmarks - gt_landmarks)
             lmd_values.append(distances)
     lmd_result = np.array(lmd_values).mean()
-    print('lmd:', lmd_result)
     return lmd_result   
 
 if __name__ == '__main__':

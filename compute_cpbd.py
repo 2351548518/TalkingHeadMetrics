@@ -1,5 +1,5 @@
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "6"  # 使用 GPU 这一行需要在import torch前面进行导入，这样才是指定卡
+# os.environ["CUDA_VISIBLE_DEVICES"] = "6"  # 使用 GPU 这一行需要在import torch前面进行导入，这样才是指定卡
 from utils.video_utils import read_mp4
 import argparse
 import numpy as np
@@ -19,7 +19,6 @@ def compute_cpbd(pd_video_folder):
         cpbd_value = [cpbd.compute(frame) for frame in tqdm(pd_frames, leave=False)]
         cpbd_values.extend(cpbd_value)
     cpbd_results = np.array(cpbd_values).mean()
-    print('cpbd:', cpbd_results)
     return cpbd_results
 
 if __name__ == '__main__':

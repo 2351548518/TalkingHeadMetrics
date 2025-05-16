@@ -28,7 +28,6 @@ def compute_psnr(gt_video_folder, pd_video_folder):
         psnr_value = psnr(pd_frames, gt_frames, reduction='none')
         psnr_values.extend([e.item() for e in psnr_value])
     psnr_result = np.array(psnr_values).mean()
-    print('psnr:', psnr_result)
     return psnr_result
 
 if __name__ == '__main__':

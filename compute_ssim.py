@@ -1,5 +1,5 @@
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "6"  # 使用 GPU 这一行需要在import torch前面进行导入，这样才是指定卡
+# os.environ["CUDA_VISIBLE_DEVICES"] = "6"  # 使用 GPU 这一行需要在import torch前面进行导入，这样才是指定卡
 import argparse
 import numpy as np
 import torch
@@ -28,7 +28,6 @@ def compute_ssim(gt_video_folder, pd_video_folder):
         ssim_value = ssim(pd_frames, gt_frames, data_range=1., reduction='none')
         ssim_values.extend([e.item() for e in ssim_value])
     ssim_result = np.array(ssim_values).mean()
-    print('ssim:', ssim_result)
     return ssim_result
 
 if __name__ == '__main__':
