@@ -4,5 +4,6 @@
 *.pt2
 *.pyc
 .vscode
+weights/*
 output/*
 data/*

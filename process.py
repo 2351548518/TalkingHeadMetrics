@@ -134,7 +134,7 @@ if __name__ == '__main__':
     # write to file, the file name is {data}_metrics.txt
     current_time = time.localtime()
     formatted_time = time.strftime('%Y_%m_%d_%H_%M_%S', current_time)
-    file_name = f"metrics_{formatted_time}.txt"
+    file_name = f"{formatted_time}_metrics.txt"
     if args.task == -1:
         with open(file_name, 'w') as f:
             f.write(f'fid: {fid_result}\n')

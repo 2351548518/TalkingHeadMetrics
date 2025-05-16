@@ -4,7 +4,7 @@ import sys, time, os, pdb, argparse, pickle, subprocess, glob, cv2
 import numpy as np
 import pandas as pd
 from shutil import rmtree
-
+import time
 import scenedetect
 from scenedetect.video_manager import VideoManager
 from scenedetect.scene_manager import SceneManager
@@ -343,6 +343,10 @@ if __name__ == '__main__':
     parser.add_argument('--data_dir',           type=str, default='./output', help='Output direcotry')
     parser.add_argument('--pd_video_folder',    type=str, default='',       help='')
     parser.add_argument('--gt_audio_folder',    type=str, default='',       help='')
+    parser.add_argument('--initial_model', type=str, default="", help='')
+    parser.add_argument('--S3FD_weight', type=str, default="", help='')
+    parser.add_argument('--batch_size', type=int, default='20', help='')
+    parser.add_argument('--vshift', type=int, default='15', help='')
     parser.add_argument('--reference',          type=str, default='',       help='Video reference')
     parser.add_argument('--facedet_scale',      type=float, default=0.25, help='Scale factor for face detection')
     parser.add_argument('--crop_scale',         type=float, default=0.40, help='Scale bounding box')
@@ -350,9 +354,7 @@ if __name__ == '__main__':
     parser.add_argument('--frame_rate',         type=int, default=25,       help='Frame rate')
     parser.add_argument('--num_failed_det', type=int, default=25,       help='Number of missed detections allowed before tracking is stopped')
     parser.add_argument('--min_face_size',  type=int, default=100,  help='Minimum face size in pixels')
-    parser.add_argument('--initial_model', type=str, default="data/syncnet_v2.model", help='')
-    parser.add_argument('--batch_size', type=int, default='20', help='')
-    parser.add_argument('--vshift', type=int, default='15', help='')
+
     opt = parser.parse_args()
 
     setattr(opt,'avi_dir',os.path.join(opt.data_dir,'pyavi'))
@@ -367,7 +369,7 @@ if __name__ == '__main__':
     s.loadParameters(opt.initial_model)
     print("Model %s loaded."%opt.initial_model)
 
-    DET = S3FD(device='cuda')
+    DET = S3FD(device='cuda',weight_path=opt.S3FD_weight)
     video_name_list = os.listdir(opt.pd_video_folder)
     offset_and_confs = []
     dists = []
@@ -381,3 +383,9 @@ if __name__ == '__main__':
         offset_and_confs.append([offset, conf])
         dists.append(dist)
     print(np.array(offset_and_confs))
+
+    current_time = time.localtime()
+    formatted_time = time.strftime('%Y_%m_%d_%H_%M_%S', current_time)
+    file_name = f"{formatted_time}_lipsync.npy"
+    np.save(file_name, np.array(offset_and_confs))
+    print(f"Results saved to {os.path.join(opt.data_dir, file_name)}")
